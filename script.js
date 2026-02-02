@@ -102,22 +102,15 @@ function showElement(id) {
 
 // ===== DRAFT PHASE =====
 function initializeDraft() {
-  // Select 20 random teachers from the pool of 87
+  // Select 20 random teachers from the pool
   gameState.draftPool = shuffleArray(allTeachers).slice(0, 20);
 
-  // Create snake draft order
-  gameState.draftOrder = [
-    'Seniors', 'Juniors', 'Sophomores', 'Freshmen',  // Round 1
-    'Freshmen', 'Sophomores', 'Juniors', 'Seniors',  // Round 2 (reversed)
-    'Seniors', 'Juniors', 'Sophomores', 'Freshmen',  // Round 3
-    'Freshmen', 'Sophomores', 'Juniors', 'Seniors',  // Round 4 (reversed)
-    'Seniors', 'Juniors', 'Sophomores', 'Freshmen'   // Round 5
-  ];
-
-  gameState.currentDraftIndex = 0;
-
   renderDraftUI();
-  updateDraftIndicator();
+  
+  // Start automatic draft after a brief delay
+  setTimeout(() => {
+    startAutomaticDraft();
+  }, 1000);
 }
 
 function renderDraftUI() {
@@ -134,45 +127,124 @@ function renderDraftUI() {
       <div class="teacher-name">${teacher.name}</div>
     `;
 
-    card.addEventListener('click', () => selectTeacher(index));
     grid.appendChild(card);
   });
 }
 
-function updateDraftIndicator() {
-  const currentGrade = gameState.draftOrder[gameState.currentDraftIndex];
+// Automatic Draft Animation
+async function startAutomaticDraft() {
+  const grades = ['Seniors', 'Juniors', 'Sophomores', 'Freshmen'];
   const indicator = document.getElementById('draft-indicator');
-  indicator.innerHTML = `<span style="color: ${GRADE_COLORS[currentGrade]}">${currentGrade.toUpperCase()}</span> - Pick your champion!`;
-  indicator.style.borderColor = GRADE_COLORS[currentGrade];
-}
+  
+  // Create a floating selection display area
+  let selectionDisplay = document.createElement('div');
+  selectionDisplay.id = 'floating-selection';
+  selectionDisplay.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    border: 4px solid #DC143C;
+    border-radius: 20px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    z-index: 1000;
+    min-width: 600px;
+    box-shadow: 0 0 50px rgba(220, 20, 60, 0.7);
+  `;
+  document.body.appendChild(selectionDisplay);
 
-function selectTeacher(teacherIndex) {
-  const card = document.querySelector(`.teacher-card[data-index="${teacherIndex}"]`);
-  if (card.classList.contains('disabled')) return;
-
-  const teacher = gameState.draftPool[teacherIndex];
-  const currentGrade = gameState.draftOrder[gameState.currentDraftIndex];
-
-  // Add to roster
-  gameState.rosters[currentGrade].push(teacher);
-
-  // Disable card
-  card.classList.add('disabled');
-
-  // Update roster display
-  updateRosterDisplay(currentGrade);
-
-  // Advance draft
-  gameState.currentDraftIndex++;
-
-  if (gameState.currentDraftIndex >= gameState.draftOrder.length) {
-    // Draft complete
-    setTimeout(() => {
-      transitionToBracket();
-    }, 1000);
-  } else {
-    updateDraftIndicator();
+  for (const grade of grades) {
+    // Show grade name
+    indicator.innerHTML = `<span style="color: ${GRADE_COLORS[grade]}">${grade.toUpperCase()}</span> - DRAFTING...`;
+    indicator.style.borderColor = GRADE_COLORS[grade];
+    
+    selectionDisplay.innerHTML = `
+      <h2 style="color: ${GRADE_COLORS[grade]}; font-size: 3em; margin: 0;">${grade}</h2>
+      <div id="temp-selections" style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;"></div>
+    `;
+    
+    const tempSelections = document.getElementById('temp-selections');
+    
+    // Pick 5 random teachers for this grade
+    const availableTeachers = gameState.draftPool.filter(t => !t.drafted);
+    const selectedTeachers = [];
+    
+    for (let i = 0; i < 5 && availableTeachers.length > 0; i++) {
+      await new Promise(resolve => setTimeout(resolve, 400));
+      
+      // Pick random teacher
+      const randomIndex = Math.floor(Math.random() * availableTeachers.length);
+      const teacher = availableTeachers[randomIndex];
+      teacher.drafted = true;
+      selectedTeachers.push(teacher);
+      
+      // Find and gray out the card
+      const cards = document.querySelectorAll('.teacher-card');
+      cards.forEach(card => {
+        const img = card.querySelector('img');
+        if (img.src === teacher.photo) {
+          card.classList.add('disabled');
+          card.style.animation = 'pulse 0.5s ease';
+        }
+      });
+      
+      // Add to floating display with animation
+      const tempCard = document.createElement('div');
+      tempCard.style.cssText = `
+        background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        border: 3px solid ${GRADE_COLORS[grade]};
+        border-radius: 15px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        animation: slideIn 0.5s ease;
+        box-shadow: 0 4px 20px rgba(220, 20, 60, 0.5);
+      `;
+      tempCard.innerHTML = `
+        <img src="${teacher.photo}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid ${GRADE_COLORS[grade]};" />
+        <div style="color: white; font-weight: bold; margin-top: 10px; text-align: center; font-size: 0.9em;">${teacher.name}</div>
+      `;
+      tempSelections.appendChild(tempCard);
+      
+      // Remove from available
+      availableTeachers.splice(randomIndex, 1);
+    }
+    
+    // Add to roster
+    gameState.rosters[grade] = selectedTeachers;
+    
+    // Wait a moment to show the selections
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Animate to bottom roster
+    selectionDisplay.style.transition = 'all 0.8s ease';
+    selectionDisplay.style.transform = 'translate(-50%, 100vh)';
+    selectionDisplay.style.opacity = '0';
+    
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Update roster display at bottom
+    updateRosterDisplay(grade);
+    
+    // Reset floating display for next grade
+    selectionDisplay.style.transition = 'none';
+    selectionDisplay.style.transform = 'translate(-50%, -50%)';
+    selectionDisplay.style.opacity = '1';
   }
+  
+  // Remove floating display
+  selectionDisplay.remove();
+  
+  // Transition to bracket
+  indicator.innerHTML = 'DRAFT COMPLETE!';
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  transitionToBracket();
 }
 
 function updateRosterDisplay(grade) {
@@ -265,11 +337,11 @@ function showGameScreen(screenId) {
 }
 
 function updateMatchHeader() {
-  const { team1, team2, scores } = gameState.currentMatch;
+  const { team1, team2 } = gameState.currentMatch;
   document.getElementById('match-title').innerHTML =
     `<span style="color: ${GRADE_COLORS[team1]}">${team1}</span> vs <span style="color: ${GRADE_COLORS[team2]}">${team2}</span>`;
-  document.getElementById('match-score').textContent =
-    `${team1}: ${scores.team1} - ${team2}: ${scores.team2}`;
+  // Hide score for single-round matches
+  document.getElementById('match-score').style.display = 'none';
 }
 
 function startNewRound() {
@@ -309,7 +381,6 @@ function showTeam1Selection() {
 function renderSelectionRoster(team) {
   const teamName = gameState.currentMatch[team === 'team1' ? 'team1' : 'team2'];
   const roster = gameState.rosters[teamName];
-  const usedTeachers = gameState.currentMatch.usedTeachers[team];
 
   const rosterDiv = document.getElementById(`${team}-roster`);
   rosterDiv.innerHTML = '';
@@ -319,18 +390,12 @@ function renderSelectionRoster(team) {
     card.className = 'selection-card';
     card.dataset.index = index;
 
-    if (usedTeachers.includes(teacher.name)) {
-      card.classList.add('used');
-    }
-
     card.innerHTML = `
       <img src="${teacher.photo}" alt="${teacher.name}" />
       <div class="teacher-name">${teacher.name}</div>
     `;
 
-    if (!usedTeachers.includes(teacher.name)) {
-      card.addEventListener('click', () => selectChampion(team, index));
-    }
+    card.addEventListener('click', () => selectChampion(team, index));
 
     rosterDiv.appendChild(card);
   });
@@ -379,10 +444,6 @@ function showFaceOff() {
     console.error('Champions not selected!');
     return;
   }
-
-  // Mark teachers as used (moved here to prevent premature usage tracking)
-  gameState.currentMatch.usedTeachers.team1.push(team1Champion.name);
-  gameState.currentMatch.usedTeachers.team2.push(team2Champion.name);
 
   // Set champions
   document.getElementById('champion1-img').src = team1Champion.photo;
@@ -439,8 +500,8 @@ function showMatchWinner() {
   document.getElementById('match-winner-team').textContent = winner;
   document.getElementById('match-winner-team').style.color = GRADE_COLORS[winner];
 
-  document.getElementById('final-match-score').textContent =
-    `${team1}: ${scores.team1} - ${team2}: ${scores.team2}`;
+  // For single-round matches, show "WINS!" instead of score
+  document.getElementById('final-match-score').textContent = 'WINS THE MATCH!';
 
   showGameScreen('match-winner');
 
@@ -683,16 +744,8 @@ function handleContinue() {
       break;
 
     case 'round-winner':
-      // Check if match is over (best of 3 for semifinals, best of 5 for championship)
-      const isChampionship = gameState.phase === 'championship';
-      const winThreshold = isChampionship ? 3 : 2;
-      const maxRounds = isChampionship ? 5 : 3;
-
-      if (scores.team1 === winThreshold || scores.team2 === winThreshold || roundNumber === maxRounds) {
-        showMatchWinner();
-      } else {
-        startNewRound();
-      }
+      // Single round per match - always go to match winner after round
+      showMatchWinner();
       break;
 
     case 'match-winner':

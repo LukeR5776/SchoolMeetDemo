@@ -438,6 +438,17 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+@keyframes slideIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-30px) scale(0.8);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1);
+  }
+}
+
 .selection-area {
   width: 100%;
   max-width: 1400px;
