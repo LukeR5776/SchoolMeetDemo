@@ -121,6 +121,7 @@ function renderDraftUI() {
     const card = document.createElement('div');
     card.className = 'teacher-card';
     card.dataset.index = index;
+    card.dataset.teacherName = teacher.name; // Add teacher name for easy identification
 
     card.innerHTML = `
       <img src="${teacher.photo}" alt="${teacher.name}" />
@@ -183,11 +184,10 @@ async function startAutomaticDraft() {
       teacher.drafted = true;
       selectedTeachers.push(teacher);
       
-      // Find and gray out the card
+      // Find and gray out the card by teacher name
       const cards = document.querySelectorAll('.teacher-card');
       cards.forEach(card => {
-        const img = card.querySelector('img');
-        if (img.src === teacher.photo) {
+        if (card.dataset.teacherName === teacher.name) {
           card.classList.add('disabled');
           card.style.animation = 'pulse 0.5s ease';
         }
