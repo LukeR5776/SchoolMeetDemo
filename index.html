@@ -9,8 +9,22 @@
 <body>
   <div id="app">
 
+    <!-- START PHASE -->
+    <div id="start-phase" class="phase">
+      <div class="start-screen">
+        <h1 class="game-title">SCHOOL CHAMPIONS BATTLE</h1>
+        <h2 class="game-subtitle">Pomfret Edition</h2>
+        <div id="loading-status" class="loading-status">
+          <div class="loading-spinner"></div>
+          <p id="loading-text">Loading teacher images...</p>
+          <p id="loading-progress">0 / 71</p>
+        </div>
+        <button id="begin-game" class="btn-begin" disabled>BEGIN GAME</button>
+      </div>
+    </div>
+
     <!-- DRAFT PHASE -->
-    <div id="draft-phase" class="phase">
+    <div id="draft-phase" class="phase hidden">
       <div class="phase-header">
         <h1>TEACHER DRAFT</h1>
         <div id="draft-indicator" class="draft-indicator"></div>

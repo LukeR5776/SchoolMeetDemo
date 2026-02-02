@@ -13,11 +13,9 @@ const PROMPTS = [
   "Most likely to go on a tangent and forget the original point",
   "Most likely to be mistaken for a student",
   "Most likely to be the most out of pocket teacher",
-  "Most likely to punch a colleague",
+  "Most likely to fight a colleague",
   "Most likely to skip a school meeting",
   "Most likely to be the best dorm parent",
-  "Most likely to fail a drug test",
-  "Most likely to check too much during Intervis",
   "Most likely to be a part of the CIA",
   "Most likely to take contraband for themselves",
   "Most likely to go bald"
@@ -777,7 +775,60 @@ function handleContinue() {
   }
 }
 
+// ===== IMAGE PRELOADING =====
+async function preloadImages() {
+  const loadingText = document.getElementById('loading-text');
+  const loadingProgress = document.getElementById('loading-progress');
+  const beginButton = document.getElementById('begin-game');
+  const spinner = document.querySelector('.loading-spinner');
+  
+  let loadedCount = 0;
+  const totalImages = allTeachers.length;
+  
+  // Create promises for all image loads
+  const imagePromises = allTeachers.map((teacher) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        loadedCount++;
+        loadingProgress.textContent = `${loadedCount} / ${totalImages}`;
+        resolve();
+      };
+      
+      img.onerror = () => {
+        loadedCount++;
+        loadingProgress.textContent = `${loadedCount} / ${totalImages}`;
+        console.warn(`Failed to load image: ${teacher.photo}`);
+        resolve(); // Still resolve to not block the game
+      };
+      
+      img.src = teacher.photo;
+    });
+  });
+  
+  // Wait for all images to load
+  await Promise.all(imagePromises);
+  
+  // All images loaded - update UI
+  loadingText.textContent = 'All images loaded!';
+  loadingText.style.color = '#00C853';
+  spinner.style.display = 'none';
+  beginButton.disabled = false;
+  beginButton.style.animation = 'pulse 2s ease-in-out infinite';
+}
+
 // ===== INITIALIZATION =====
 window.addEventListener('DOMContentLoaded', () => {
-  initializeDraft();
+  // Show start phase
+  showPhase('start');
+  
+  // Start preloading images
+  preloadImages();
+  
+  // Set up begin button
+  document.getElementById('begin-game').addEventListener('click', () => {
+    showPhase('draft');
+    initializeDraft();
+  });
 });
