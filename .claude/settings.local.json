@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/lukeryan/**)",
+      "Bash(awk:*)",
+      "Bash(open index.html)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

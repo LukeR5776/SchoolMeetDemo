@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School Champions Battle - Pomfret Edition</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- DRAFT PHASE -->
+    <div id="draft-phase" class="phase">
+      <div class="phase-header">
+        <h1>TEACHER DRAFT</h1>
+        <div id="draft-indicator" class="draft-indicator"></div>
+      </div>
+
+      <div id="teacher-grid" class="teacher-grid"></div>
+
+      <div id="roster-status" class="roster-status">
+        <div class="roster-item" data-grade="Seniors">
+          <h3 class="grade-seniors">Seniors</h3>
+          <div class="roster-count">0/5</div>
+          <div class="roster-teachers"></div>
+        </div>
+        <div class="roster-item" data-grade="Juniors">
+          <h3 class="grade-juniors">Juniors</h3>
+          <div class="roster-count">0/5</div>
+          <div class="roster-teachers"></div>
+        </div>
+        <div class="roster-item" data-grade="Sophomores">
+          <h3 class="grade-sophomores">Sophomores</h3>
+          <div class="roster-count">0/5</div>
+          <div class="roster-teachers"></div>
+        </div>
+        <div class="roster-item" data-grade="Freshmen">
+          <h3 class="grade-freshmen">Freshmen</h3>
+          <div class="roster-count">0/5</div>
+          <div class="roster-teachers"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRACKET PHASE -->
+    <div id="bracket-phase" class="phase hidden">
+      <div class="phase-header">
+        <h1>TOURNAMENT BRACKET</h1>
+      </div>
+
+      <div class="bracket-display">
+        <div class="bracket-row">
+          <div class="matchup">
+            <h2>SEMIFINAL 1</h2>
+            <div class="matchup-teams">
+              <div class="bracket-team grade-seniors" data-grade="Seniors">
+                <h3>SENIORS</h3>
+                <div class="bracket-roster"></div>
+              </div>
+              <div class="vs">VS</div>
+              <div class="bracket-team grade-freshmen" data-grade="Freshmen">
+                <h3>FRESHMEN</h3>
+                <div class="bracket-roster"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="matchup">
+            <h2>SEMIFINAL 2</h2>
+            <div class="matchup-teams">
+              <div class="bracket-team grade-juniors" data-grade="Juniors">
+                <h3>JUNIORS</h3>
+                <div class="bracket-roster"></div>
+              </div>
+              <div class="vs">VS</div>
+              <div class="bracket-team grade-sophomores" data-grade="Sophomores">
+                <h3>SOPHOMORES</h3>
+                <div class="bracket-roster"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bracket-arrow">↓</div>
+
+        <div class="championship-placeholder">
+          <h2>CHAMPIONSHIP</h2>
+          <p>Winners advance here</p>
+        </div>
+      </div>
+
+      <button id="start-tournament" class="btn-primary">START TOURNAMENT</button>
+    </div>
+
+    <!-- GAME PHASE -->
+    <div id="game-phase" class="phase hidden">
+      <div class="phase-header">
+        <div id="match-title" class="match-title"></div>
+        <div id="match-score" class="match-score"></div>
+        <div id="round-prompt" class="round-prompt"></div>
+      </div>
+
+      <!-- Game Content Area (only one visible at a time) -->
+      <div id="game-content">
+
+        <!-- Prompt Display -->
+        <div id="prompt-display" class="game-screen hidden">
+          <h2>CHAMPION OF...</h2>
+          <div id="current-prompt" class="current-prompt"></div>
+        </div>
+
+        <!-- Team 1 Selection -->
+        <div id="team1-selection" class="game-screen hidden">
+          <h2 id="team1-name" class="team-selection-title"></h2>
+          <p class="selection-instruction">Select your champion for this round:</p>
+          <div id="team1-roster" class="selection-roster"></div>
+        </div>
+
+        <!-- Team 2 Selection -->
+        <div id="team2-selection" class="game-screen hidden">
+          <h2 id="team2-name" class="team-selection-title"></h2>
+          <p class="selection-instruction">Select your champion for this round:</p>
+          <div id="team2-roster" class="selection-roster"></div>
+        </div>
+
+        <!-- Face-Off Display -->
+        <div id="face-off" class="game-screen hidden">
+          <div class="face-off-champions">
+            <div id="champion1" class="champion-card">
+              <img id="champion1-img" src="" alt="">
+              <div id="champion1-name" class="champion-name"></div>
+            </div>
+
+            <div class="vs-large">VS</div>
+
+            <div id="champion2" class="champion-card">
+              <img id="champion2-img" src="" alt="">
+              <div id="champion2-name" class="champion-name"></div>
+            </div>
+          </div>
+
+          <!-- Voting Controls -->
+          <div class="voting-controls">
+            <button id="vote-left" class="btn-vote">
+              <span id="left-team-name"></span> WINS!
+            </button>
+            <button id="vote-right" class="btn-vote">
+              <span id="right-team-name"></span> WINS!
+            </button>
+          </div>
+        </div>
+
+        <!-- Round Winner Display -->
+        <div id="round-winner" class="game-screen hidden">
+          <h2>ROUND WINNER:</h2>
+          <div id="round-winner-team" class="round-winner-team"></div>
+        </div>
+
+        <!-- Match Winner Display -->
+        <div id="match-winner" class="game-screen hidden">
+          <h1>MATCH WINNER!</h1>
+          <div id="match-winner-team" class="match-winner-team"></div>
+          <div id="final-match-score" class="final-match-score"></div>
+        </div>
+
+        <!-- Teacher Steal Animation -->
+        <div id="teacher-steal" class="game-screen hidden">
+          <h1>ABSORBING <span id="defeated-team-name"></span>'S ROSTER!</h1>
+          <div class="steal-animation-container">
+            <div id="steal-animation-area"></div>
+          </div>
+          <div id="new-roster-count" class="new-roster-count"></div>
+        </div>
+
+        <!-- Bracket Update Display -->
+        <div id="bracket-update" class="game-screen hidden">
+          <h1>TOURNAMENT PROGRESS</h1>
+          <div class="bracket-update-display">
+            <div class="bracket-update-row">
+              <div class="bracket-update-match">
+                <h2>SEMIFINAL 1</h2>
+                <div class="bracket-update-result">
+                  <div id="semi1-result" class="match-result-display"></div>
+                </div>
+              </div>
+
+              <div class="bracket-update-match">
+                <h2>SEMIFINAL 2</h2>
+                <div class="bracket-update-result">
+                  <div id="semi2-result" class="match-result-display"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bracket-arrow">↓</div>
+
+            <div class="championship-display">
+              <h2>CHAMPIONSHIP</h2>
+              <div id="championship-teams" class="championship-teams-display"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Single Continue Button (always at bottom) -->
+      <button id="game-continue" class="btn-primary">Continue</button>
+    </div>
+
+    <!-- ENDING PHASE -->
+    <div id="ending-phase" class="phase hidden">
+      <div class="confetti-container"></div>
+
+      <div class="winner-announcement">
+        <h1 class="trophy">🏆</h1>
+        <h1 id="tournament-winner" class="tournament-winner"></h1>
+        <h2 class="champion-subtitle">ARE THE CHAMPIONS!</h2>
+      </div>
+
+      <div class="winner-roster-display">
+        <h3>Championship Roster:</h3>
+        <div id="winner-roster" class="winner-roster"></div>
+      </div>
+
+      <button id="play-again" class="btn-primary">PLAY AGAIN</button>
+    </div>
+
+  </div>
+
+  <!-- Confetti elements (will be generated by JS) -->
+  <div id="confetti-zone"></div>
+
+  <!-- Scripts -->
+  <script src="teachers.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
